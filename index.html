@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>YouTube in Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #74ABE2, #5563DE);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            border: none;
+        }
+
+        footer {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        footer strong {
+            color: #ffdd57;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Watch YouTube Inside My Website 🎥</h1>
+
+        <!-- Full YouTube Embed -->
+        <iframe src="https://www.youtube.com"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <footer>
+        Developed by <strong>Karthik Shet</strong>
+    </footer>
+
+</body>
+
+</html>
