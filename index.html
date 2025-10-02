@@ -1,77 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>YouTube in Website</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(to right, #74ABE2, #5563DE);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 20px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 1200px;
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        iframe {
-            width: 100%;
-            height: 600px;
-            border-radius: 10px;
-            border: none;
-        }
-
-        footer {
-            margin-top: 20px;
-            color: #fff;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        footer strong {
-            color: #ffdd57;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube — Inside My Website</title>
+  <meta name="description" content="Search and watch YouTube videos inside this website using YouTube Data API."/>
+  <style>
+    :root{
+      --bg1:#74ABE2; --bg2:#5563DE;
+      --glass: rgba(255,255,255,.15);
+      --text:#fff; --ink:#0f172a;
+      --chip:#ff7b54; --chipHover:#ff5722;
+      --card: rgba(255,255,255,.9);
+      --muted:#5161d8;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh; background:linear-gradient(90deg,var(--bg1),var(--bg2));
+      color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      display:flex; flex-direction:column; align-items:center; gap:18px; padding:20px;
+    }
+    .shell{width:100%; max-width:1200px; display:flex; flex-direction:column; gap:16px}
+    header{
+      background:var(--glass); backdrop-filter:saturate(140%) blur(10px);
+      border:1px solid rgba(255,255,255,.25); border-radius:16px; padding:16px 16px;
+      display:grid; gap:12px;
+    }
+    .brand{display:flex; align-items:center; gap:10px}
+    .brand h1{font-size: clamp(18px,2.8vw,26px); font-weight:800; letter-spacing:.3px}
+    .brand .badge{font-size:12px; background:rgba(0,0,0,.25); padding:4px 8px; border-radius:999px}
+    .tools{display:grid; grid-template-columns:1fr auto auto; gap:10px}
+    .search{
+      display:flex; gap:8px; width:100%;
+      background:var(--card); color:var(--ink); border-radius:12px; padding:8px; align-items:center;
+    }
+    .search input{
+      flex:1; border:none; outline:none; font-size:16px; padding:10px 8px; background:transparent;
+    }
+    .search .btn{
+      background:var(--muted); color:#fff; border:none; border-radius:10px; padding:10px 14px; cursor:pointer;
+      transition:.2s; font-weight:600
+    }
+    .btn.secondary{background:#2e365b}
+    .btn:hover{filter:brightness(1.05)}
+    .filters{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      background:var(--chip); border:none; color:#fff; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600
+    }
+    .chip:hover{background:var(--chipHover)}
+    main{
+      display:grid; grid-template-columns:1.1fr .9fr; gap:16px;
+    }
+    @media (max-width:980px){ main{grid-template-columns:1fr;}}
+    .player, .results{
+      background:var(--glass); border:1px solid rgba(255,255,255,.25);
+      border-radius:16px; padding:12px; backdrop-filter:saturate(140%) blur(10px);
+    }
+    .player iframe{width:100%; aspect-ratio:16/9; border:none; border-radius:12px; background:#000}
+    .player .meta{padding:10px 6px}
+    .title{font-size:18px; font-weight:800; line-height:1.3}
+    .meta .sub{opacity:.9; margin-top:6px; font-size:14px}
+    .actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+    .actions .btn{padding:8px 10px; border-radius:10px}
+    .results h2{font-size:16px; font-weight:800; margin:2px 6px 10px}
+    .grid{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    }
+    @media (max-width:980px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:520px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background:var(--card); color:var(--ink); border-radius:12px; overflow:hidden; cursor:pointer;
+      display:flex; flex-direction:column; transition:.15s;
+      border:1px solid rgba(0,0,0,.06)
+    }
+    .card:hover{transform:translateY(-2px)}
+    .thumb{position:relative; width:100%; aspect-ratio:16/9; background:#000}
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+    .dur{
+      position:absolute; right:8px; bottom:8px; background:rgba(0,0,0,.75); color:#fff;
+      font-size:12px; padding:3px 6px; border-radius:6px
+    }
+    .info{padding:10px 10px 12px}
+    .info .t{font-weight:700; font-size:14px; line-height:1.35; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; overflow:hidden}
+    .info .c{margin-top:6px; font-size:12px; opacity:.8}
+    .pager{display:flex; gap:8px; justify-content:center; margin-top:10px}
+    footer{margin-top:8px; text-align:center}
+    footer strong{color:#ffdd57}
+    .note{font-size:12px; opacity:.9}
+    .err{background:#ffefef; color:#8a1f1f; border:1px solid #ffb8b8; padding:10px; border-radius:10px; margin:8px 0}
+    .hide{display:none}
+  </style>
 </head>
-
 <body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <h1>YouTube Inside My Website</h1>
+        <span class="badge">Powered by YouTube Data API</span>
+      </div>
 
-    <div class="container">
-        <h1>Watch YouTube Inside My Website 🎥</h1>
+      <div class="tools">
+        <div class="search">
+          <input id="q" type="text" placeholder="Search YouTube… try: ‘programming tutorials’, ‘lofi beats’, ‘ipl highlights’"/>
+          <button class="btn" id="searchBtn" title="Search">Search</button>
+        </div>
+        <button class="btn secondary" id="trendingBtn" title="Show trending videos">Trending</button>
+        <button class="btn secondary" id="clearBtn" title="Clear results">Clear</button>
+      </div>
 
-        <!-- Full YouTube Embed -->
-        <iframe src="https://www.youtube.com"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-        </iframe>
-    </div>
+      <div class="filters">
+        <button class="chip" data-q="music">Music</button>
+        <button class="chip" data-q="news">News</button>
+        <button class="chip" data-q="tech review">Tech Reviews</button>
+        <button class="chip" data-q="coding tutorial">Coding Tutorials</button>
+        <button class="chip" data-q="Bollywood">Bollywood</button>
+        <button class="chip" data-q="cricket highlights">Cricket</button>
+      </div>
+
+      <div id="error" class="err hide"></div>
+      <div class="note">Note: This is a custom UI. You can watch videos here without leaving your site. If something fails, it’s usually API key limits or restrictions.</div>
+    </header>
+
+    <main>
+      <section class="player">
+        <iframe id="player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="YouTube player"></iframe>
+        <div class="meta">
+          <div id="vTitle" class="title">Welcome! Pick a video from results or hit Trending.</div>
+          <div id="vSub" class="sub"></div>
+          <div class="actions">
+            <a id="openYT" class="btn" href="#" target="_blank" rel="noopener">Open on YouTube</a>
+            <button id="copyLink" class="btn" type="button">Copy Link</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="results">
+        <h2 id="listTitle">Results</h2>
+        <div id="grid" class="grid"></div>
+        <div class="pager">
+          <button class="btn secondary" id="prevPage" disabled>Prev</button>
+          <button class="btn secondary" id="nextPage" disabled>Next</button>
+        </div>
+      </section>
+    </main>
 
     <footer>
-        Developed by <strong>Karthik Shet</strong>
+      Developed by <strong>Karthik Shet</strong>
     </footer>
+  </div>
 
+  <script>
+    // ======= CONFIG =======
+    const API_KEY = "YOUR_API_KEY_HERE"; // <-- Replace this
+    const REGION = "IN";                 // Region for Trending & relevance
+    const MAX_RESULTS = 12;
+
+    // ======= DOM =======
+    const qEl = document.getElementById('q');
+    const grid = document.getElementById('grid');
+    const player = document.getElementById('player');
+    const vTitle = document.getElementById('vTitle');
+    const vSub = document.getElementById('vSub');
+    const openYT = document.getElementById('openYT');
+    const copyLink = document.getElementById('copyLink');
+    const searchBtn = document.getElementById('searchBtn');
+    const trendingBtn = document.getElementById('trendingBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const listTitle = document.getElementById('listTitle');
+    const errorBox = document.getElementById('error');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+
+    let pageCtx = { q:"", nextToken:null, prevToken:null, mode:"search" };
+
+    // ======= HELPERS =======
+    const fmt = {
+      views(n){ n = Number(n)||0;
+        if(n>=1e9) return (n/1e9).toFixed(1)+"B views";
+        if(n>=1e6) return (n/1e6).toFixed(1)+"M views";
+        if(n>=1e3) return (n/1e3).toFixed(1)+"K views";
+        return n + " views";
+      },
+      duration(iso){ // PT#M#S
+        if(!iso) return "";
+        const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso)||[];
+        const h = m[1]||0, mm = m[2]||0, s = m[3]||0;
+        const parts = [h?String(h).padStart(1,'0'):null, String(mm).padStart(2,'0'), String(s).padStart(2,'0')].filter(Boolean);
+        return parts.join(':');
+      },
+      escapeHTML(s){ return s.replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[c])) }
+    };
+
+    function showError(msg){
+      errorBox.textContent = msg;
+      errorBox.classList.remove('hide');
+      setTimeout(()=>errorBox.classList.add('hide'), 5000);
+    }
+
+    function youtubeIdFromInput(val){
+      try{
+        const u = new URL(val);
+        if(u.hostname.includes('youtube.com')){
+          if(u.searchParams.get('v')) return u.searchParams.get('v');
+          const parts = u.pathname.split('/');
+          if(parts[1]==='shorts' && parts[2]) return parts[2];
+        }
+        if(u.hostname === 'youtu.be'){
+          return u.pathname.slice(1);
+        }
+      }catch(_e){}
+      // Assume raw ID
+      if(/^[A-Za-z0-9_-]{11}$/.test(val)) return val;
+      return null;
+    }
+
+    function setPlayer(id, title="", channel=""){
+      player.src = "https://www.youtube.com/embed/" + id + "?autoplay=1";
+      vTitle.textContent = title || "Playing video";
+      vSub.textContent = channel ? "Channel • " + channel : "";
+      openYT.href = "https://www.youtube.com/watch?v=" + id;
+      copyLink.onclick = async ()=>{
+        try{
+          await navigator.clipboard.writeText(openYT.href);
+          copyLink.textContent = "Copied!";
+          setTimeout(()=>copyLink.textContent="Copy Link", 1500);
+        }catch(e){ showError("Could not copy link"); }
+      };
+    }
+
+    function card({videoId, title, channelTitle, thumb, duration}){
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="thumb">
+          <img loading="lazy" src="${thumb}" alt="">
+          <div class="dur">${duration || ""}</div>
+        </div>
+        <div class="info">
+          <div class="t">${fmt.escapeHTML(title)}</div>
+          <div class="c">${fmt.escapeHTML(channelTitle)}</div>
+        </div>
+      `;
+      el.addEventListener('click', ()=> setPlayer(videoId, title, channelTitle));
+      return el;
+    }
+
+    function updatePager(){
+      prevBtn.disabled = !pageCtx.prevToken;
+      nextBtn.disabled = !pageCtx.nextToken;
+    }
+
+    // ======= API CALLS =======
+    async function yt(endpoint, params){
+      if(!API_KEY || API_KEY === "YOUR_API_KEY_HERE"){
+        showError("Add your YouTube API key in the code to enable search & trending.");
+        throw new Error("Missing API key");
+      }
+      const url = new URL("https://www.googleapis.com/youtube/v3/" + endpoint);
+      Object.entries(params).forEach(([k,v])=> url.searchParams.set(k,v));
+      url.searchParams.set("key", API_KEY);
+      const res = await fetch(url);
+      if(!res.ok){
+        const j = await res.json().catch(()=>({error:{message:res.statusText}}));
+        throw new Error(j.error?.message || ("HTTP "+res.status));
+      }
+      return res.json();
+    }
+
+    async function searchVideos(q, pageToken=null){
+      // If user pasted a full YouTube URL or ID, jump straight to play
+      const pastedId = youtubeIdFromInput(q.trim());
+      if(pastedId){
+        setPlayer(pastedId);
+        listTitle.textContent = "Direct Play";
+        grid.innerHTML = "";
+        pageCtx = {q, nextToken:null, prevToken:null, mode:"direct"};
+        updatePager();
+        return;
+      }
+
+      const data = await yt("search", {
+        part: "snippet",
+        q,
+        type: "video",
+        maxResults: MAX_RESULTS,
+        regionCode: REGION,
+        relevanceLanguage: "en",
+        safeSearch: "moderate",
+        pageToken: pageToken || ""
+      });
+
+      const ids = data.items.map(i=> i.id.videoId).join(",");
+      const details = await yt("videos", {
+        part: "contentDetails,statistics",
+        id: ids
+      });
+
+      const infoMap = new Map(details.items.map(v=> [v.id, {
+        dur: fmt.duration(v.contentDetails?.duration),
+        views: fmt.views(v.statistics?.viewCount)
+      }]));
+
+      grid.innerHTML = "";
+      data.items.forEach(i=>{
+        const vid = i.id.videoId;
+        const sn = i.snippet;
+        const meta = infoMap.get(vid) || {};
+        grid.appendChild(card({
+          videoId: vid,
+          title: sn.title,
+          channelTitle: sn.channelTitle,
+          thumb: sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url,
+          duration: meta.dur
+        }));
+      });
+
+      listTitle.textContent = `Results for “${q}”`;
+      pageCtx = { q, nextToken: data.nextPageToken || null, prevToken: data.prevPageToken || null, mode:"search" };
+      updatePager();
+      if(data.items[0]){ // auto-load first result in player
+        const first = data.items[0]; setPlayer(first.id.videoId, first.snippet.title, first.snippet.channelTitle);
+      }
+    }
+
+    async function trending(pageToken=null){
+      const data = await yt("videos", {
+        part: "snippet,contentDetails,statistics",
+        chart: "mostPopular",
+        maxResults: MAX_RESULTS,
+        regionCode: REGION,
+        pageToken: pageToken || ""
+      });
+      grid.innerHTML = "";
+      data.items.forEach(v=>{
+        grid.appendChild(card({
+          videoId: v.id,
+          title: v.snippet.title,
+          channelTitle: v.snippet.channelTitle,
+          thumb: v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url,
+          duration: fmt.duration(v.contentDetails?.duration)
+        }));
+      });
+      listTitle.textContent = "Trending Now";
+      pageCtx = { q:"", nextToken: data.nextPageToken || null, prevToken: data.prevPageToken || null, mode:"trending" };
+      updatePager();
+      if(data.items[0]){ const f=data.items[0]; setPlayer(f.id, f.snippet.title, f.snippet.channelTitle); }
+    }
+
+    // ======= EVENTS =======
+    searchBtn.addEventListener('click', ()=> qEl.value.trim() && searchVideos(qEl.value.trim()).catch(e=>showError(e.message)));
+    qEl.addEventListener('keydown', e=>{ if(e.key==="Enter"){ searchBtn.click(); }});
+    trendingBtn.addEventListener('click', ()=> trending().catch(e=>showError(e.message)));
+    clearBtn.addEventListener('click', ()=>{ grid.innerHTML=""; listTitle.textContent="Results"; pageCtx={q:"",nextToken:null,prevToken:null,mode:"search"}; updatePager(); vTitle.textContent="Welcome! Pick a video from results or hit Trending."; vSub.textContent=""; player.src=""; openYT.href="#"; });
+
+    document.querySelectorAll('.chip').forEach(ch=> ch.addEventListener('click', ()=>{ qEl.value = ch.dataset.q; searchBtn.click(); }));
+
+    nextBtn.addEventListener('click', ()=>{
+      if(pageCtx.mode==="search" && pageCtx.nextToken) searchVideos(pageCtx.q, pageCtx.nextToken).catch(e=>showError(e.message));
+      else if(pageCtx.mode==="trending" && pageCtx.nextToken) trending(pageCtx.nextToken).catch(e=>showError(e.message));
+    });
+    prevBtn.addEventListener('click', ()=>{
+      if(pageCtx.mode==="search" && pageCtx.prevToken) searchVideos(pageCtx.q, pageCtx.prevToken).catch(e=>showError(e.message));
+      else if(pageCtx.mode==="trending" && pageCtx.prevToken) trending(pageCtx.prevToken).catch(e=>showError(e.message));
+    });
+
+    // Optional: load trending on first visit
+    trending().catch(()=>{/* ignore on first load if key missing */});
+  </script>
 </body>
-
 </html>
